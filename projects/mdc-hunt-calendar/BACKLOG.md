@@ -4,7 +4,7 @@
 **Original:** https://github.com/edoDev/MDC-Hunt-Calendar-2025 · https://edodev.github.io/MDC-Hunt-Calendar-2025/  
 **Updated:** 2026-08-18
 
-The July 2 planning backlog said “no code changes yet.” That is stale. The copied app already has the 2026–27 window, bear overlay, scouting planner, JSON season file, and PWA shell.
+The July 2 planning backlog said “no code changes yet.” That is stale. The copied app already has the 2026–27 window, bear overlay, scouting planner, trip notes, stand-wind matcher, JSON season file, and PWA shell.
 
 **MDC Fall Deer & Turkey Hunting Regulations handbook is now published.** Verification work is unblocked. Do not hunt off unverified hatched bars.
 
@@ -25,6 +25,8 @@ The July 2 planning backlog said “no code changes yet.” That is stale. The c
 - CWD management-zone banner removed; early/late antlerless layers
 - Black bear Oct 17–30, BMZ 2, permit-status setting, quota hotline
 - Scouting locations / sessions / observations + JSON export/import
+- Trip notes with optional on-device GPS
+- Stand-wind matcher (manual wind; MODEL/LOG)
 - Pre-season scouting report
 - Offline PWA (manifest + service worker)
 - REG / MODEL / LOG labeling
@@ -33,9 +35,8 @@ The July 2 planning backlog said “no code changes yet.” That is stale. The c
 
 | ID | Item | Pri | Status | Notes |
 |----|------|-----|--------|-------|
-| M-010 | Phone layout under ~480px (week strip / agenda) | P1 | open | Desktop/print is the current bias. |
-| M-011 | Stand-wind matcher with manual wind entry | P1 | open | Offline-native. Label as MODEL. |
-| M-012 | Prime legal-light shading on day cells | P2 | open | Already computed. |
+| M-010 | Tighten phone layout under ~480px | P1 | open | Next 7/14 day views exist; month grid is still desktop-first. |
+| M-012 | Prime legal-light shading on day cells | P2 | open | Already computed. Confirm it is visible, not only documented. |
 | M-013 | Fall turkey overlay | P2 | open | Dates overlap the window; still an open product call. |
 | M-014 | Configurable location (not only Pevely) | P2 | open | Changes sun/rut assumptions — must stay labeled. |
 | M-015 | Persistent-storage nudge + export reminder | P2 | open | iOS can evict localStorage. |
