@@ -1,11 +1,30 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "title": "MDC Hunt Calendar — 2026–27 Season Data",
+    "title": "MDC Hunt Calendar — Season Data",
     "season_label": "2026-2027",
     "calendar_window": { "start": "2026-09-01", "end": "2027-01-15" },
-    "generated": "2026-07-02",
-    "disclaimer": "Not a legal document. Regulations can change. Verify at mdc.mo.gov and in the MDC 2026 Fall Deer & Turkey Hunting Regulations booklet before hunting.",
+    "generated": "2026-08-18",
+    "verified_against": "2026 Fall Deer & Turkey Hunting Regulations and Information (MDC, PDF dated 2026-06-16)",
+    "disclaimer": "Not a legal document. Regulations can change. Verify at mdc.mo.gov and in the current MDC Fall Deer & Turkey Hunting Regulations booklet before hunting.",
+    "guides": [
+      {
+        "id": "fdt-2026",
+        "title": "2026 Fall Deer & Turkey Hunting Regulations and Information",
+        "file": "2026 FDT_508.pdf",
+        "publisher": "Missouri Department of Conservation",
+        "pdf_date": "2026-06-16",
+        "role": "Season regulation (authoritative for dates, county status, Telecheck, CWD sampling, feed/mineral ban)."
+      },
+      {
+        "id": "deer-plan-2025",
+        "title": "Missouri White-tailed Deer Management Plan 2025–2034",
+        "file": "Missouri_White-Tailed_Deer_Management_Plan_2025.pdf",
+        "publisher": "Missouri Department of Conservation",
+        "pdf_date": "2025-02",
+        "role": "Strategic plan only. Confirms CWD-first management and liberal antlerless harvest. Does not set 2026–27 season dates or county lists."
+      }
+    ],
     "data_classes": {
       "regulation": "Officially set by MDC / Missouri Conservation Commission; source and verification date required.",
       "model": "Computed (moon, sun, rut estimates); method noted; not regulatory.",
@@ -18,11 +37,18 @@
     "latitude": 38.2834,
     "longitude": -90.3951,
     "county": "Jefferson",
+    "jefferson_county": {
+      "antlerless_portions": "open",
+      "firearms_antlerless_permit_limit": 4,
+      "cwd_mandatory_sampling_nov_14_15_2026": false,
+      "feed_mineral_ban": true,
+      "source": "2026 FDT_508.pdf maps pp.6, 7, 17, 25; Wildlife Code 3 CSR 10-7.433 p.57"
+    },
     "bear_management_zone": {
       "zone": "BMZ 2",
       "basis": "Jefferson County lies east of MO-47 and south of the Missouri River, inside the BMZ 2 boundary (north from the Arkansas border on US-63 to I-44; east on I-44 to MO-47; north on MO-47 to the Missouri River; east along the river to the Illinois border).",
       "source_url": "https://mdc.mo.gov/hunting-trapping/species/bear/bear-management-zone-boundaries-map",
-      "verified_date": "2026-07-02",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     }
   },
@@ -37,10 +63,12 @@
         { "start": "2026-09-15", "end": "2026-11-13" },
         { "start": "2026-11-25", "end": "2027-01-15" }
       ],
-      "notes": "Statewide. Only one antlered deer may be taken before the November firearms portion.",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Statewide. Residents: two antlered deer archery + firearms combined; only one antlered deer during archery before Nov. 14. Nonresident any-deer / archer permits: one antlered deer for both seasons combined (FDT p.5, 20, 72).",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "5, 20, 72",
+      "regulation_ref": "3 CSR 10-7.432",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -49,11 +77,12 @@
       "name": "Firearms Early Antlerless",
       "method": "firearms",
       "ranges": [{ "start": "2026-10-09", "end": "2026-10-11" }],
-      "notes": "Open counties only. VERIFY Jefferson County is open in the 2026 Fall booklet (expected July 2026).",
-      "needs_verification": "county_open_status",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Jefferson County is OPEN (FDT p.25 orange; 3 CSR 10-7.433 lists Jefferson). Antlerless deer only. Four firearms antlerless permits may be filled in Jefferson during all firearms portions combined (FDT p.17). Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "17, 24, 25, 57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -62,10 +91,12 @@
       "name": "Firearms Early Youth",
       "method": "firearms",
       "ranges": [{ "start": "2026-10-24", "end": "2026-10-25" }],
-      "notes": "Ages 6–15. Moved one week earlier in 2026 under the new Halloween-overlap rule.",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Statewide. Ages 6–15 on the opening day of the early youth portion. Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -74,10 +105,12 @@
       "name": "Firearms November Portion",
       "method": "firearms",
       "ranges": [{ "start": "2026-11-14", "end": "2026-11-24" }],
-      "notes": "Main firearms portion. One antlered deer during entire firearms season. Hunter orange required.",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Statewide. One antlered deer during all firearms portions combined. Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "5, 28, 57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -86,10 +119,12 @@
       "name": "Firearms Late Youth",
       "method": "firearms",
       "ranges": [{ "start": "2026-11-27", "end": "2026-11-29" }],
-      "notes": "Ages 6–15.",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Statewide. Ages 6–15 on the opening day of the early youth portion. Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -98,11 +133,12 @@
       "name": "Firearms Late Antlerless",
       "method": "firearms",
       "ranges": [{ "start": "2026-12-05", "end": "2026-12-13" }],
-      "notes": "Open counties only. VERIFY Jefferson County is open in the 2026 Fall booklet.",
-      "needs_verification": "county_open_status",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Jefferson County is OPEN (FDT p.25 orange; 3 CSR 10-7.433 lists Jefferson). Antlerless deer only. Four firearms antlerless permits may be filled in Jefferson during all firearms portions combined (FDT p.17). Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "17, 24, 25, 57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -111,10 +147,12 @@
       "name": "Firearms Alternative Methods",
       "method": "alternative",
       "ranges": [{ "start": "2026-12-26", "end": "2027-01-05" }],
-      "notes": "Muzzleloaders, cap-and-ball, centerfire handguns, air-powered firearms, bows, atlatls.",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-sets-deer-turkey-hunting-dates-2026-2027-seasons",
-      "approved": "2025-12-12 Missouri Conservation Commission",
-      "verified_date": "2026-07-02",
+      "notes": "Statewide. Muzzleloaders and cap-and-ball .40+, centerfire handguns, air-powered guns, air bows, bows, crossbows, atlatls (FDT p.57, 72). Hunter orange required.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "30, 57, 72",
+      "regulation_ref": "3 CSR 10-7.433",
+      "approved": "Missouri Conservation Commission; printed in 2026 FDT booklet",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
@@ -124,7 +162,7 @@
       "method": "archery_and_firearms",
       "ranges": [{ "start": "2026-10-17", "end": "2026-10-30" }],
       "quota_dependent": true,
-      "notes": "Resident draw-permit holders only, zone-specific. Season closes early in a BMZ if its harvest quota is reached (statewide: 2,000 permits, 60-bear quota). Lone bears only; no sows with cubs; no denned bears; no bait; no dogs; hunter orange required.",
+      "notes": "Resident draw-permit holders only, zone-specific. Season closes early in a BMZ if its harvest quota is reached (statewide: 2,000 permits, 60-bear quota). Lone bears only; no sows with cubs; no denned bears; no bait; no dogs; hunter orange required. Bear rules are not in the FDT booklet; source is 3 CSR 10-7.900 / MDC bear pages.",
       "daily_requirement": {
         "action": "Call 800-668-4045 before hunting each day to check quota/closure status.",
         "applies_to": "permit_holders"
@@ -134,7 +172,7 @@
         "Present bear at designated MDC check station",
         "Submit premolar tooth to MDC Furbearer Program within 10 days"
       ],
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-reminds-hunters-apply-elk-bear-permits-may",
+      "source_url": "https://mdc.mo.gov/hunting-trapping/species/bear",
       "regulation_ref": "3 CSR 10-7.900",
       "verified_date": "2026-07-02",
       "data_class": "regulation"
@@ -144,21 +182,24 @@
   "removed_in_2026": [
     {
       "item": "CWD Management Zone",
-      "detail": "Zone concept removed for 2026-27; county-specific rules remain (see advisories).",
-      "source_url": "https://mdc.mo.gov/hunting-trapping/species/deer",
-      "verified_date": "2026-07-02"
+      "detail": "Zone concept removed for 2026-27 (FDT p.72 What's New). County-specific feed/mineral and sampling rules remain.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "72",
+      "verified_date": "2026-08-18"
     },
     {
       "item": "CWD Portion of firearms deer season",
-      "detail": "Eliminated; do not render a CWD/antlerless-CWD layer.",
-      "source_url": "https://mdc.mo.gov/hunting-trapping/species/deer",
-      "verified_date": "2026-07-02"
+      "detail": "Eliminated (FDT p.72). Do not render a CWD/antlerless-CWD layer.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "72",
+      "verified_date": "2026-08-18"
     },
     {
       "item": "Antler-point restriction",
-      "detail": "Removed for all counties.",
-      "source_url": "https://mdc.mo.gov/hunting-trapping/species/deer",
-      "verified_date": "2026-07-02"
+      "detail": "Removed for all counties (FDT p.72).",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "72",
+      "verified_date": "2026-08-18"
     }
   ],
 
@@ -166,27 +207,30 @@
     {
       "id": "cwd-sampling",
       "title": "CWD sampling — Jefferson County",
-      "status": "voluntary_expected",
-      "detail": "In 2025, Jefferson County was NOT a mandatory sampling county (voluntary sampling encouraged); St. Louis and St. Charles were mandatory. The 2026 designated-county list publishes in the July Fall booklet — re-verify before rendering any compliance language.",
-      "needs_verification": "2026_designated_county_list",
-      "source_url": "https://mdc.mo.gov/newsroom/mdc-reminds-deer-hunters-st-louis-st-charles-counties-require-mandatory-cwd-sampling",
-      "verified_date": "2026-07-02",
+      "status": "voluntary",
+      "detail": "Jefferson County is not shaded on the Nov 14–15, 2026 mandatory CWD sampling map (FDT p.7). Free voluntary testing is available all season (mdc.mo.gov/CWD). Mandatory sampling now rotates statewide on a four-year cycle; Jefferson is not in the 2026 cohort. If you hunt a shaded county on Nov 14–15, take the deer or head to a station that day.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "7–10, 72",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
       "id": "feed-mineral-ban",
       "title": "Feed and mineral placement prohibited",
-      "detail": "Placing grain, salt, minerals, or other consumables to attract deer is prohibited year-round in counties with a CWD detection or within 10 miles of one. Jefferson County has CWD history — treat the ban as in effect.",
-      "source_url": "https://mdc.mo.gov/hunting-trapping/species/deer",
-      "verified_date": "2026-07-02",
+      "detail": "Jefferson County is shaded on the FDT p.6 map. Grain, salt products, minerals, and other consumable products used to attract deer are prohibited year-round. Exceptions: feed within 100 feet of a residence or occupied building; feed placed so deer cannot reach it; normal agricultural, forest-management, or wildlife food-plot practices; feed used in an MDC-authorized feral-swine or CWD effort. Statewide, mineral blocks that contain grain or other food additives are illegal bait (FDT p.4).",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "4, 6, 72",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     },
     {
       "id": "deer-telecheck",
       "title": "Deer Telecheck deadline",
-      "detail": "Telecheck by 10 p.m. on day of harvest via MO Hunting app, mdc.mo.gov, or 1-866-227-2564. Confirm exact wording against the 2026 Fall booklet.",
-      "needs_verification": "booklet_wording",
-      "verified_date": "2026-07-02",
+      "detail": "Notch the permit immediately after harvest. Telecheck the deer before transporting it out of the county of harvest or by 10 p.m. on the day of harvest, whichever comes first (FDT pp.6, 64–65; 3 CSR 10-7.431). MO Hunting app, mdc.mo.gov, or 1-866-227-2564. Keep the confirmation number on the carcass until processing. The deer must stay intact or field-dressed until Telechecked.",
+      "source_url": "2026 FDT_508.pdf",
+      "source_pages": "6, 64, 65",
+      "regulation_ref": "3 CSR 10-7.431",
+      "verified_date": "2026-08-18",
       "data_class": "regulation"
     }
   ],
@@ -200,13 +244,6 @@
       "source_url": "https://mdc.mo.gov/hunting-trapping/permits/bear-permits",
       "verified_date": "2026-07-02",
       "data_class": "regulation"
-    },
-    {
-      "id": "booklet-verification",
-      "date_range": { "start": "2026-07-01", "end": "2026-08-31" },
-      "title": "Verify against 2026 Fall Deer & Turkey booklet",
-      "detail": "Confirm: antlerless open-county status for Jefferson, 2026 mandatory CWD sampling counties/days, Telecheck wording, managed-hunt dates.",
-      "data_class": "project_task"
     }
   ],
 

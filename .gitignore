@@ -4,3 +4,6 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+projects/mdc-hunt-calendar/_extract/
+projects/mdc-hunt-calendar/_extract_pdfs.py
+projects/mdc-hunt-calendar/_verify_sync.py
