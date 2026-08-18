@@ -36,6 +36,7 @@ Season dates on p.72 match what was already in the app. Bear overlay was not in 
 - REG / MODEL / LOG labeling
 - Year dropped from the product title
 - 2026 FDT booklet verification for Jefferson County
+- Year-over-year 2025–26 → 2026–27 breakdown (`CHANGES-2026.md` + in-app What's new)
 
 ## Next features
 

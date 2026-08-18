@@ -204,6 +204,7 @@
     </select>
   </label>
   <button id="btnHelp">Help</button>
+  <button id="btnChanges">What's new</button>
   <button id="btnCraft">Field craft</button>
   <button id="btnScout">Scouting</button>
   <button id="btnReport">Scouting report</button>
@@ -420,6 +421,70 @@
     Evidence tiers reflect the weight of GPS-collar and harvest research as of
     2026, summarized in good faith — not a substitute for time in the woods.</p>
   <button onclick="document.getElementById('craft').close()"
+    style="margin-top:8px;">Close</button>
+</dialog>
+
+<dialog id="changes" aria-label="What changed this year" style="max-width:680px;
+  border:2px solid var(--ink); border-radius:4px; padding:18px 20px;
+  background:var(--panel); color:var(--ink); font-size:14px; line-height:1.55;">
+  <h3 class="disp" style="font-size:22px; margin-bottom:4px;">What's new —
+    2026 vs last year</h3>
+  <p style="color:var(--ink-soft); margin-bottom:10px;">
+    Official MDC changes for Jefferson County / Pevely. Not a legal document.
+    Full sourced write-up: <a href="CHANGES-2026.md">CHANGES-2026.md</a> ·
+    <a href="2026%20FDT_508.pdf">2026 Fall booklet</a>.</p>
+
+  <h4 class="disp" style="margin:10px 0 2px;">What actually changes a sit here</h4>
+  <ol style="margin:0 0 8px 18px;">
+    <li><strong>No CWD firearms portion.</strong> Last year the zone (Jefferson
+      included) had an extra firearms window Nov 26–30. That portion is gone.</li>
+    <li><strong>Early youth moved a week earlier</strong> — Oct 24–25, 2026 —
+      so it does not land on Halloween weekend.</li>
+    <li>The <strong>CWD Management Zone label is gone</strong>, but the feed /
+      mineral ban is still on, sampling is still voluntary this November, and
+      APR was already off here.</li>
+  </ol>
+
+  <h4 class="disp" style="margin:10px 0 2px;">Season windows</h4>
+  <div style="overflow-x:auto;">
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr><th style="text-align:left; padding:4px 6px; border-bottom:1px solid var(--line);">Portion</th>
+          <th style="text-align:left; padding:4px 6px; border-bottom:1px solid var(--line);">2025–26</th>
+          <th style="text-align:left; padding:4px 6px; border-bottom:1px solid var(--line);">2026–27</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:3px 6px;">Archery</td><td style="padding:3px 6px;">Sep 15–Nov 14 + Nov 26–Jan 15</td><td style="padding:3px 6px;">Sep 15–Nov 13 + Nov 25–Jan 15</td></tr>
+      <tr><td style="padding:3px 6px;">Early antlerless</td><td style="padding:3px 6px;">Oct 10–12</td><td style="padding:3px 6px;">Oct 9–11 (Jefferson open)</td></tr>
+      <tr><td style="padding:3px 6px;">Early youth</td><td style="padding:3px 6px;">Nov 1–2</td><td style="padding:3px 6px;"><strong>Oct 24–25</strong></td></tr>
+      <tr><td style="padding:3px 6px;">November firearms</td><td style="padding:3px 6px;">Nov 15–25</td><td style="padding:3px 6px;">Nov 14–24</td></tr>
+      <tr><td style="padding:3px 6px;">CWD firearms</td><td style="padding:3px 6px;">Nov 26–30 (zone)</td><td style="padding:3px 6px;"><strong>Removed</strong></td></tr>
+      <tr><td style="padding:3px 6px;">Late youth</td><td style="padding:3px 6px;">Nov 28–30</td><td style="padding:3px 6px;">Nov 27–29</td></tr>
+      <tr><td style="padding:3px 6px;">Late antlerless</td><td style="padding:3px 6px;">Dec 6–14</td><td style="padding:3px 6px;">Dec 5–13 (Jefferson open)</td></tr>
+      <tr><td style="padding:3px 6px;">Alternative methods</td><td style="padding:3px 6px;">Dec 27–Jan 6</td><td style="padding:3px 6px;">Dec 26–Jan 5</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4 class="disp" style="margin:12px 0 2px;">Statewide (may or may not hit you)</h4>
+  <ul style="margin:0 0 8px 18px;">
+    <li>APR removed in the last 18 counties — now none left. Jefferson already had no APR because it was in the old CWD zone.</li>
+    <li>Nonresident regular permits: one antlered deer for the year (was two). Qualifying nonresident landowners stay at two on their land.</li>
+    <li>Mandatory CWD sampling is a four-year county rotation. 28 counties on Nov 14–15, 2026. Jefferson is not on that map.</li>
+    <li>CWD Management Permits now need 20 contiguous Core Area acres (was 5).</li>
+    <li>No post-season targeted removals. Permit prices went up (FDT pp.16–19).</li>
+  </ul>
+
+  <h4 class="disp" style="margin:10px 0 2px;">Unchanged here</h4>
+  <p>½-hour shooting light. Resident two-buck year / one firearms buck.
+    Hunter orange on every firearms portion. Four Jefferson antlerless
+    firearms permits. Telecheck before you leave the county or by 10 p.m.,
+    whichever comes first.</p>
+
+  <p style="margin-top:10px; font-size:12.5px; color:var(--ink-soft);">
+    2026 dates: FDT p.72. 2025–26 dates: published 2025–26 season structure.
+    Policy: MDC newsroom 12 Dec 2025 and 17 Aug 2026. Always verify at mdc.mo.gov.</p>
+  <button onclick="document.getElementById('changes').close()"
     style="margin-top:8px;">Close</button>
 </dialog>
 
@@ -682,6 +747,22 @@
       "data_class": "regulation"
     }
   ],
+
+  "year_over_year": {
+    "compared_to": "2025-26",
+    "writeup": "CHANGES-2026.md",
+    "verified_date": "2026-08-18",
+    "jefferson": {
+      "cwd_zone_label": "removed — county rules remain",
+      "cwd_firearms_portion": "removed (was Nov 26–30, 2025 in zone counties)",
+      "apr": "no local change — already off while in the old CWD zone",
+      "mandatory_sampling": "still not required Nov 14–15 2026 (4-year rotation; Jefferson not in 2026 cohort)",
+      "feed_mineral_ban": "still in effect",
+      "antlerless": "still open; 4 firearms antlerless permits",
+      "early_youth": "moved one week earlier to Oct 24–25 to miss Halloween"
+    },
+    "data_class": "regulation"
+  },
 
   "models": {
     "rut": {
@@ -1439,6 +1520,11 @@ function renderSources(){
     html += `<p>${s.name}: <a href="${encodeURI(s.source_url)}">${s.source_url}</a>
       · verified ${s.verified_date}</p>`;
   });
+  html += `<h4 class="disp">Year-over-year</h4>
+    <p><a href="CHANGES-2026.md">What changed since 2025–26</a>
+      — CWD firearms portion gone, early youth a week earlier, zone label gone
+      but Jefferson feed/mineral ban and voluntary sampling unchanged.
+      Open the in-app <strong>What's new</strong> button for the short version.</p>`;
   html += `<h4 class="disp">Data classes</h4>
     <p><strong>REG</strong> — set by MDC / Conservation Commission, sourced above.
     <strong>MODEL</strong> — computed here (sun, moon, rut estimate); not regulatory.
@@ -1489,6 +1575,8 @@ document.getElementById("btnTheme").onclick = () => {
 /* ---------- help ---------- */
 document.getElementById("btnHelp").onclick = () =>
   document.getElementById("help").showModal();
+document.getElementById("btnChanges").onclick = () =>
+  document.getElementById("changes").showModal();
 document.getElementById("btnCraft").onclick = () =>
   document.getElementById("craft").showModal();
 

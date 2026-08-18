@@ -247,6 +247,22 @@
     }
   ],
 
+  "year_over_year": {
+    "compared_to": "2025-26",
+    "writeup": "CHANGES-2026.md",
+    "verified_date": "2026-08-18",
+    "jefferson": {
+      "cwd_zone_label": "removed — county rules remain",
+      "cwd_firearms_portion": "removed (was Nov 26–30, 2025 in zone counties)",
+      "apr": "no local change — already off while in the old CWD zone",
+      "mandatory_sampling": "still not required Nov 14–15 2026 (4-year rotation; Jefferson not in 2026 cohort)",
+      "feed_mineral_ban": "still in effect",
+      "antlerless": "still open; 4 firearms antlerless permits",
+      "early_youth": "moved one week earlier to Oct 24–25 to miss Halloween"
+    },
+    "data_class": "regulation"
+  },
+
   "models": {
     "rut": {
       "method": "Regional whitetail rut pattern for east-central Missouri; peak estimated Nov 6–15 ±5 days. Heuristic, not MDC data.",

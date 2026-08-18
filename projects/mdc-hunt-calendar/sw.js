@@ -3,11 +3,12 @@
    season data changes (match seasons-2026.json meta.generated / verified
    dates). Old caches are deleted on activate, so users never carry stale
    regulation dates into the field once they get one online load. */
-const CACHE = "mdc-cal-2026-08-18";
+const CACHE = "mdc-cal-2026-08-18-yoy";
 const PRECACHE = [
   ".",
   "index.html",
   "seasons-2026.json",
+  "CHANGES-2026.md",
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
