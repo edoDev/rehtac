@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rehtac AI — Test Landing</title>
+  <style>
+    :root {
+      --bg: #03050c;
+      --text: #e8eef8;
+      --muted: #8a9bb8;
+      --accent: #00c8e0;
+      --accent-soft: rgba(0, 200, 224, 0.15);
+      --border: rgba(255,255,255,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      transition: opacity 0.1s linear;
+    }
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(3,5,12,0.55) 100%);
+    }
+    .content { position: relative; z-index: 2; }
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 80px 24px 120px;
+      position: relative;
+      z-index: 5;
+    }
+    .hero-panel {
+      position: relative;
+      z-index: 6;
+      background: rgba(6, 10, 22, 0.72);
+      backdrop-filter: blur(28px) saturate(1.3);
+      -webkit-backdrop-filter: blur(28px) saturate(1.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 52px 56px 48px;
+      max-width: 800px;
+      /* Soft blurred edge via large multi-layer shadow */
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 8px 32px rgba(0,0,0,0.4),
+        0 24px 80px rgba(0,0,0,0.55),
+        0 0 120px 40px rgba(3,5,12,0.5);
+    }
+    .logo {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #00d4f0;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 7;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      margin-bottom: 18px;
+      color: #f0f4fc;
+      position: relative;
+      z-index: 7;
+    }
+    .hero .sub {
+      font-size: 1.1rem;
+      color: #a0b0c8;
+      max-width: 520px;
+      margin: 0 auto 36px;
+      position: relative;
+      z-index: 7;
+    }
+    .cta-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 7;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      position: relative;
+      z-index: 7;
+    }
+    .btn-primary {
+      background: #00d4f0;
+      color: #03050c;
+    }
+    .btn-primary:hover {
+      background: #33e0ff;
+      box-shadow: 0 0 24px rgba(0,212,240,0.4);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      color: #e8eef8;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.1);
+    }
+    section {
+      padding: 100px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    section h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      letter-spacing: -0.3px;
+    }
+    section p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 16px;
+      max-width: 640px;
+    }
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .card {
+      background: rgba(8,12,24,0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+    }
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 0.95rem;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+    .pipeline {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .step h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .step p {
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    footer {
+      padding: 60px 24px 40px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer .brand {
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 60px 16px 80px; }
+      .hero-panel { padding: 36px 24px 32px; border-radius: 16px; }
+      section { padding: 70px 20px; }
+      .cta-row { flex-direction: column; align-items: center; }
+      .btn { width: 100%; max-width: 280px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div class="vignette"></div>
+
+  <div class="content">
+    <header class="hero">
+      <div class="hero-panel">
+        <div class="logo">Rehtac AI</div>
+        <h1>AI that ships real products for real businesses</h1>
+        <p class="sub">
+          We turn conversations into working prototypes — fast.
+          Built for founders and teams who need results, not research projects.
+        </p>
+        <div class="cta-row">
+          <a href="#how" class="btn btn-primary">See how it works</a>
+          <a href="#contact" class="btn btn-ghost">Start a conversation</a>
+        </div>
+      </div>
+    </header>
+
+    <section id="what">
+      <div class="section-label">What we do</div>
+      <h2>From idea to working software in days, not months</h2>
+      <p>
+        Most AI projects stall in endless discovery or generic chatbot demos.
+        We run a tight, structured process that starts with a real conversation
+        and ends with something you can put in front of customers.
+      </p>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Vibe Coding</h3>
+          <p>Structured discovery interviews + live AI-assisted prototyping. You talk, we build in the same session.</p>
+        </div>
+        <div class="card">
+          <h3>AI Integration</h3>
+          <p>Practical systems for small and mid-size teams — not science projects. Chat, automation, internal tools.</p>
+        </div>
+        <div class="card">
+          <h3>Rapid Prototypes</h3>
+          <p>Websites, apps, and internal tools delivered as working software, not slide decks.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="section-label">How it works</div>
+      <h2>A lean launch pipeline</h2>
+      <p>
+        Designed for non-technical founders and busy operators.
+        No six-week discovery phases. No hand-offs into a black hole.
+      </p>
+      <div class="pipeline">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>Discovery conversation</h3>
+            <p>We run a focused interview using a custom question framework. Goals, constraints, vibe, and flows — captured cleanly.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Live analysis & framing</h3>
+            <p>Transcript and notes are turned into a clear product brief and interaction model while you’re still in the room.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>AI-assisted build</h3>
+            <p>We prototype in real time. You see the interface take shape, give feedback, and leave with something concrete.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <h3>Handoff or iterate</h3>
+            <p>Take the working prototype and run with it, or continue into a focused build sprint with us.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="who">
+      <div class="section-label">Who it’s for</div>
+      <h2>Built for people who can’t (and shouldn’t) do it themselves</h2>
+      <p>
+        Non-technical founders. Small business operators. Teams that need a real tool
+        without hiring a full product squad. If you know what you want but the technical
+        path feels opaque, this is the lane.
+      </p>
+    </section>
+
+    <section id="contact">
+      <div class="section-label">Next step</div>
+      <h2>Start with a conversation</h2>
+      <p>
+        No long forms. Tell us what you’re trying to ship and we’ll tell you
+        whether a focused session makes sense.
+      </p>
+      <div class="cta-row" style="justify-content: flex-start; margin-top: 28px;">
+        <a href="mailto:hello@rehtac.ai" class="btn btn-primary">hello@rehtac.ai</a>
+      </div>
+    </section>
+
+    <footer>
+      <p class="brand">REHTAC AI</p>
+      <p>Lean AI systems for people who ship.</p>
+    </footer>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+    const PARTICLE_COUNT = 48000;
+    const canvas = document.getElementById('bg-canvas');
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x03050c, 0.014);
+
+    const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 120);
+    camera.position.set(14, 7.5, 16);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: false,
+      powerPreference: 'high-performance',
+      alpha: false
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.05, 0.48, 0.22
+    ));
+
+    const vertexShader = /* glsl */`
+      attribute float aId;
+      attribute vec3 aRandom;
+      uniform float uTime;
+      varying float vAlpha;
+      varying vec3 vColor;
+
+      vec3 getBlackHolePos(float id, vec3 rnd) {
+        float layer = floor(rnd.x * 4.0);
+        float angle, r, y;
+        if (layer < 1.0) {
+          r = 2.55 + rnd.y * 0.22;
+          angle = id * 6.283185 + uTime * 0.55;
+          y = (rnd.z - 0.5) * 0.18;
+        } else if (layer < 2.5) {
+          r = 2.9 + pow(rnd.y, 0.55) * 8.5;
+          float orbitalSpeed = 1.15 / max(r * 0.28, 0.5);
+          angle = id * 6.283185 + uTime * orbitalSpeed;
+          y = (rnd.z - 0.5) * (0.12 + r * 0.025);
+          y += sin(angle * 1.5 + uTime * 0.15) * 0.08 * smoothstep(3.0, 8.0, r);
+        } else {
+          r = 9.5 + rnd.y * 5.0;
+          angle = id * 6.283185 + uTime * 0.05;
+          y = (rnd.z - 0.5) * 1.8;
+        }
+        return vec3(cos(angle) * r, y, sin(angle) * r);
+      }
+
+      vec3 getColor(vec3 rnd, vec3 pos) {
+        float d = length(pos.xz);
+        if (d < 2.7) {
+          return mix(vec3(1.0, 0.7, 0.25), vec3(0.4, 0.7, 1.0), rnd.x);
+        }
+        float side = pos.x * 0.55 + 0.5;
+        vec3 hot  = mix(vec3(1.0, 0.45, 0.08), vec3(1.0, 0.85, 0.3), rnd.x);
+        vec3 cool = mix(vec3(0.25, 0.45, 1.0), vec3(0.5, 0.7, 1.0), rnd.y);
+        return mix(cool, hot, smoothstep(0.15, 0.85, side + rnd.z * 0.2));
+      }
+
+      void main() {
+        vec3 pos = getBlackHolePos(aId, aRandom);
+        pos += aRandom * 0.06 * sin(uTime * 0.8 + aId);
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        float size = 2.6 * (1.0 + aRandom.x * 1.1);
+        gl_PointSize = size * (16.0 / -mvPosition.z);
+        vColor = getColor(aRandom, pos);
+        vAlpha = 0.5 + aRandom.y * 0.4;
+      }
+    `;
+
+    const fragmentShader = /* glsl */`
+      varying float vAlpha;
+      varying vec3 vColor;
+      void main() {
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv);
+        float alpha = smoothstep(0.5, 0.08, d) * vAlpha;
+        if (alpha < 0.01) discard;
+        gl_FragColor = vec4(vColor, alpha);
+      }
+    `;
+
+    const geometry = new THREE.BufferGeometry();
+    const ids = new Float32Array(PARTICLE_COUNT);
+    const randoms = new Float32Array(PARTICLE_COUNT * 3);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      ids[i] = i / PARTICLE_COUNT;
+      randoms[i * 3] = Math.random();
+      randoms[i * 3 + 1] = Math.random();
+      randoms[i * 3 + 2] = Math.random();
+    }
+    geometry.setAttribute('aId', new THREE.BufferAttribute(ids, 1));
+    geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PARTICLE_COUNT * 3), 3));
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: { uTime: { value: 0 } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const points = new THREE.Points(geometry, material);
+    const horizon = new THREE.Mesh(
+      new THREE.SphereGeometry(2.35, 48, 48),
+      new THREE.MeshBasicMaterial({ color: 0x000000 })
+    );
+
+    const group = new THREE.Group();
+    group.add(points);
+    group.add(horizon);
+    scene.add(group);
+
+    function updateScrollFade() {
+      const scrollY = window.scrollY || window.pageYOffset;
+      const fadeStart = 80;
+      const fadeEnd = window.innerHeight * 0.85;
+      let opacity = 1;
+      if (scrollY > fadeStart) {
+        opacity = 1 - Math.min(1, (scrollY - fadeStart) / (fadeEnd - fadeStart));
+        opacity = 0.08 + opacity * 0.92;
+      }
+      canvas.style.opacity = opacity;
+    }
+    window.addEventListener('scroll', updateScrollFade, { passive: true });
+    updateScrollFade();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      material.uniforms.uTime.value = t;
+      group.rotation.y = t * 0.04;
+      group.rotation.x = Math.sin(t * 0.08) * 0.04;
+      composer.render();
+    }
+    animate();
+  </script>
+</body>
+</html>

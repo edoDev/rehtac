@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /projects/
+Disallow: /rehtac-ai-test.html

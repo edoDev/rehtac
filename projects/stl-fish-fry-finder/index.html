@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STL Fish Fry Finder 🐟 — St. Louis Area Friday Fish Fries 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  /* ===== DESIGN TOKENS ===== */
+  :root {
+    --bg:       #0f0d0a;
+    --surface:  #1a1612;
+    --panel:    #201c17;
+    --border:   #2e2820;
+    --amber:    #e8a020;
+    --amber-lt: #f5c055;
+    --amber-dk: #b07818;
+    --red:      #c94040;
+    --green:    #4a9060;
+    --teal:     #3a8080;
+    --text:     #e8e0d0;
+    --text-dim: #9a8e7e;
+    --text-faint:#5a5040;
+    --font-disp: 'Playfair Display', Georgia, serif;
+    --font-body: 'Source Serif 4', Georgia, serif;
+    --font-mono: 'DM Mono', monospace;
+    --r: 6px;
+    --r-lg: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-body); }
+
+  /* ===== HEADER ===== */
+  #header {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--amber-dk);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 16px;
+    position: relative;
+    z-index: 1000;
+    flex-shrink: 0;
+  }
+  #header h1 {
+    font-family: var(--font-disp);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--amber);
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+  }
+  #header h1 span { color: var(--text-dim); font-weight: 300; font-style: italic; font-size: 1rem; }
+  .header-badge {
+    background: var(--amber);
+    color: #0f0d0a;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  #total-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* ===== SECTION SLIDER / NAV ===== */
+  #section-nav {
+    height: 44px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 999;
+  }
+  #section-nav::-webkit-scrollbar { display: none; }
+  .sec-btn {
+    flex-shrink: 0;
+    height: 100%;
+    padding: 0 16px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    position: relative;
+  }
+  .sec-btn:hover { color: var(--amber-lt); background: rgba(232,160,32,0.06); }
+  .sec-btn.active {
+    color: var(--amber);
+    background: rgba(232,160,32,0.12);
+    border-bottom: 2px solid var(--amber);
+  }
+  .sec-btn .count {
+    display: inline-block;
+    margin-left: 5px;
+    background: var(--border);
+    color: var(--text-faint);
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 100px;
+    vertical-align: middle;
+  }
+  .sec-btn.active .count { background: var(--amber-dk); color: #0f0d0a; }
+
+  /* ===== MAIN LAYOUT ===== */
+  #app {
+    display: flex;
+    height: calc(100vh - 96px);
+    overflow: hidden;
+  }
+
+  /* ===== MAP ===== */
+  #map-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+    position: relative;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+  /* Leaflet custom tiles dark overlay */
+  .leaflet-tile { filter: brightness(0.75) saturate(0.6) hue-rotate(10deg); }
+  .leaflet-container { background: #1a1612; }
+
+  /* Custom marker */
+  .ff-marker {
+    width: 28px; height: 28px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  .ff-marker-inner {
+    transform: rotate(45deg);
+    font-size: 12px;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .ff-marker.year-round { background: var(--green); border-color: #7dd0a0; }
+  .ff-marker.lenten     { background: var(--amber-dk); border-color: var(--amber); }
+  .ff-marker.restaurant { background: var(--teal); border-color: #70c0c0; }
+  .ff-marker.selected   { transform: rotate(-45deg) scale(1.45); border-color: #fff; box-shadow: 0 0 0 3px rgba(232,160,32,0.5), 0 4px 16px rgba(0,0,0,0.7); z-index: 1000 !important; }
+
+  /* Map legend */
+  #map-legend {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    z-index: 900;
+    background: rgba(15,13,10,0.88);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    backdrop-filter: blur(6px);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+  }
+  .legend-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; color: var(--text-dim); }
+  .legend-row:last-child { margin-bottom: 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ===== LIST PANEL ===== */
+  #list-panel {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #list-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #list-header .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 3px;
+  }
+  #list-header .section-name {
+    font-family: var(--font-disp);
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  #list-header .section-desc {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-style: italic;
+  }
+  #list-search {
+    margin: 8px 10px 0;
+    padding: 6px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    width: calc(100% - 20px);
+    flex-shrink: 0;
+    outline: none;
+  }
+  #list-search::placeholder { color: var(--text-faint); }
+  #list-search:focus { border-color: var(--amber-dk); }
+  #fish-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #fish-list::-webkit-scrollbar { width: 4px; }
+  #fish-list::-webkit-scrollbar-track { background: transparent; }
+  #fish-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .fish-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .fish-item:hover { background: rgba(232,160,32,0.07); }
+  .fish-item.selected { background: rgba(232,160,32,0.14); border-left: 3px solid var(--amber); padding-left: 11px; }
+  .fish-item-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .fish-item-sub {
+    font-family: var(--font-mono);
+    font-size: 0.61rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fish-item-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    padding: 1px 6px;
+    border-radius: 100px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .tag-lenten  { background: rgba(176,120,24,0.3); color: var(--amber-lt); border: 1px solid var(--amber-dk); }
+  .tag-yearround { background: rgba(74,144,96,0.25); color: #7dd0a0; border: 1px solid #3a6048; }
+  .tag-restaurant { background: rgba(58,128,128,0.25); color: #80d0d0; border: 1px solid #2a6060; }
+  .tag-church { background: rgba(150,80,80,0.2); color: #e08080; border: 1px solid #804040; }
+  .tag-vfw    { background: rgba(80,80,180,0.2); color: #9090e0; border: 1px solid #404090; }
+  .tag-rating { background: rgba(232,160,32,0.15); color: var(--amber); border: 1px solid var(--amber-dk); }
+
+  /* ===== DETAIL PANEL ===== */
+  #detail-panel {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #detail-panel::-webkit-scrollbar { width: 4px; }
+  #detail-panel::-webkit-scrollbar-track { background: transparent; }
+  #detail-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  #detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-faint);
+    text-align: center;
+    padding: 24px;
+    gap: 12px;
+  }
+  #detail-empty .fish-icon { font-size: 3rem; opacity: 0.4; }
+  #detail-empty p { font-size: 0.78rem; font-style: italic; line-height: 1.5; }
+
+  #detail-content { display: none; }
+
+  .detail-hero {
+    background: linear-gradient(135deg, rgba(176,120,24,0.3) 0%, rgba(100,60,10,0.2) 100%);
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .detail-type-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amber-lt);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .detail-type-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    display: inline-block;
+  }
+  .detail-name {
+    font-family: var(--font-disp);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .detail-addr {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .detail-addr a { color: var(--amber); text-decoration: none; }
+  .detail-addr a:hover { text-decoration: underline; }
+
+  .detail-section {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-section:last-child { border-bottom: none; }
+  .detail-label {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber-dk);
+    margin-bottom: 6px;
+  }
+  .detail-value {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .detail-value.mono { font-family: var(--font-mono); font-size: 0.7rem; }
+  .detail-value em { color: var(--text-dim); font-style: italic; }
+
+  .lent-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+  }
+  .lent-yes   { background: rgba(201,64,64,0.2); color: #f08080; border: 1px solid var(--red); }
+  .lent-no    { background: rgba(74,144,96,0.2); color: #7dd0a0; border: 1px solid var(--green); }
+
+  .rating-bar-wrap { margin-top: 6px; }
+  .rating-stars { font-size: 1rem; letter-spacing: 2px; color: var(--amber); }
+  .rating-text { font-size: 0.75rem; color: var(--text-dim); font-style: italic; margin-top: 4px; line-height: 1.4; }
+
+  .menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba(232,160,32,0.12);
+    border: 1px solid var(--amber-dk);
+    border-radius: var(--r);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-decoration: none;
+    transition: all 0.15s;
+    margin-top: 6px;
+  }
+  .menu-link:hover { background: rgba(232,160,32,0.2); color: var(--amber-lt); }
+
+  .coords-row {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+
+  /* ===== POPUP ===== */
+  .leaflet-popup-content-wrapper {
+    background: var(--panel) !important;
+    border: 1px solid var(--amber-dk) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow) !important;
+    color: var(--text) !important;
+  }
+  .leaflet-popup-tip { background: var(--panel) !important; }
+  .leaflet-popup-content {
+    margin: 12px 14px !important;
+    font-family: var(--font-body);
+    min-width: 180px;
+  }
+  .popup-name {
+    font-family: var(--font-disp);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--amber-lt);
+    margin-bottom: 3px;
+  }
+  .popup-addr { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 5px; }
+  .popup-type { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-faint); text-transform: uppercase; }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 900px) {
+    #app { flex-direction: column; }
+    #map-wrap { flex: 0 0 45vh; }
+    #list-panel { width: 100%; height: 25vh; border-left: none; border-top: 1px solid var(--border); flex-direction: row; }
+    #detail-panel { width: 100%; flex: 1; border-left: none; border-top: 1px solid var(--border); }
+    #fish-list { display: flex; flex-direction: row; overflow-x: auto; overflow-y: hidden; height: 100%; }
+    .fish-item { min-width: 180px; border-bottom: none; border-right: 1px solid var(--border); }
+  }
+
+  /* ===== SCROLL ARROWS FOR SECTION NAV ===== */
+  .nav-arrow {
+    flex-shrink: 0;
+    width: 28px;
+    height: 100%;
+    background: var(--panel);
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    transition: color 0.15s;
+  }
+  .nav-arrow:hover { color: var(--amber); }
+  .nav-arrow-right { left: auto; right: 0; border-right: none; border-left: 1px solid var(--border); }
+
+  /* ===== LENT DATES BANNER ===== */
+  #lent-banner {
+    position: absolute;
+    top: 10px; right: 10px;
+    z-index: 900;
+    background: rgba(15,13,10,0.9);
+    border: 1px solid var(--amber-dk);
+    border-radius: var(--r);
+    padding: 8px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    line-height: 1.6;
+    backdrop-filter: blur(6px);
+  }
+  #lent-banner .lent-title { color: var(--amber); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  #lent-banner .lent-row { color: var(--text-dim); }
+  #lent-banner .lent-row span { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <h1>🐟 STL Fish Fry Finder <span>— 2026</span></h1>
+  <span class="header-badge">St. Louis Metro Area</span>
+  <span class="header-badge" style="background:var(--green);color:#0f0d0a;" id="lent-status">🎣 Lent Active</span>
+  <span id="total-count">79 locations · 60-mile radius</span>
+</div>
+
+<!-- SECTION NAV -->
+<div id="section-nav">
+  <button class="nav-arrow" id="nav-left">◀</button>
+  <button class="sec-btn active" data-section="all">All Locations <span class="count">79</span></button>
+  <button class="sec-btn" data-section="0">Year-Round <span class="count">4</span></button>
+  <button class="sec-btn" data-section="1">STL City <span class="count">21</span></button>
+  <button class="sec-btn" data-section="2">South County <span class="count">13</span></button>
+  <button class="sec-btn" data-section="3">West County <span class="count">15</span></button>
+  <button class="sec-btn" data-section="4">North County <span class="count">2</span></button>
+  <button class="sec-btn" data-section="5">St. Charles Co. <span class="count">8</span></button>
+  <button class="sec-btn" data-section="6">Jefferson Co. <span class="count">1</span></button>
+  <button class="sec-btn" data-section="7">Metro East IL <span class="count">7</span></button>
+  <button class="sec-btn" data-section="8">Restaurants <span class="count">8</span></button>
+  <button class="nav-arrow nav-arrow-right" id="nav-right">▶</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- MAP -->
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="map-legend">
+      <div class="legend-row"><div class="legend-dot" style="background:var(--green)"></div>Year-Round</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--amber-dk)"></div>Lenten Season</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--teal)"></div>Restaurant Special</div>
+    </div>
+    <div id="lent-banner">
+      <div class="lent-title">📅 Lent 2026</div>
+      <div class="lent-row">Ash Wednesday: <span>Feb 18</span></div>
+      <div class="lent-row">First Friday: <span>Feb 20</span></div>
+      <div class="lent-row">Last Lenten Fri: <span>Mar 27</span></div>
+      <div class="lent-row">Good Friday: <span>Apr 3</span></div>
+    </div>
+  </div>
+
+  <!-- LIST PANEL -->
+  <div id="list-panel">
+    <div id="list-header">
+      <div class="section-label" id="current-section-label">All Sections</div>
+      <div class="section-name" id="current-section-name">All Fish Fry Locations</div>
+      <div class="section-desc" id="current-section-desc">79 establishments within 60 miles of St. Louis</div>
+    </div>
+    <input type="text" id="list-search" placeholder="🔍 Search locations...">
+    <div id="fish-list"></div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div id="detail-panel">
+    <div id="detail-empty">
+      <div class="fish-icon">🐟</div>
+      <p>Select a location from the list or click a marker on the map to see details.</p>
+    </div>
+    <div id="detail-content">
+      <div class="detail-hero">
+        <div class="detail-type-badge" id="d-type">Catholic Church</div>
+        <div class="detail-name" id="d-name">Fish Fry Name</div>
+        <div class="detail-addr" id="d-addr">Address</div>
+        <div class="coords-row" id="d-coords"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Lenten Season Only?</div>
+        <div id="d-lent"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Featured Menu Items</div>
+        <div class="detail-value" id="d-menu"></div>
+      </div>
+      <div class="detail-section" id="d-link-section">
+        <div class="detail-label">Menu / Event Page</div>
+        <a id="d-link" href="#" target="_blank" class="menu-link">🔗 View Menu / Event Page</a>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Reviews &amp; Ratings</div>
+        <div id="d-stars" class="rating-stars"></div>
+        <div class="rating-text" id="d-rating"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== DATA =====
+const SECTIONS = [
+  { label: "Section 1", name: "Year-Round", desc: "Open every Friday all year — not just Lenten season" },
+  { label: "Section 2", name: "STL City", desc: "St. Louis City Lenten fish fries" },
+  { label: "Section 3", name: "South St. Louis County", desc: "South County Lenten fish fries" },
+  { label: "Section 4", name: "West/Southwest County", desc: "Chesterfield, Kirkwood, Ballwin, Manchester area" },
+  { label: "Section 5", name: "North St. Louis County", desc: "Florissant and north county area" },
+  { label: "Section 6", name: "St. Charles County, MO", desc: "St. Peters, St. Charles, Wentzville area" },
+  { label: "Section 7", name: "Jefferson County, MO", desc: "Arnold, House Springs, Imperial area" },
+  { label: "Section 8", name: "Metro East Illinois", desc: "Madison & St. Clair Counties, IL" },
+  { label: "Section 9", name: "Restaurant Specials", desc: "Restaurant Lenten Friday fish specials" },
+];
+
+const LOCATIONS = [
+  // ---- SECTION 0: Year-Round ----
+  { id:1, sec:0, name:"St. Ferdinand Parish Fish Fry", addr:"1765 Charbonier Rd, Florissant, MO 63031", lat:38.7950, lng:-90.3217, type:"Catholic Church", lent:"No", lentLabel:"Year-Round", menu:"Fried cod, catfish, shrimp, hush puppies, spaghetti, green beans, coleslaw, homemade desserts", link:"https://stferdinandstl.org", rating:4.5, ratingText:"TripAdvisor 4.5/5 (18 reviews) — 'Granddaddy of all church fish fries.' Long lines Good Friday; community singing. Draft Busch Light available. Operating since 1953.", markerType:"year-round" },
+  { id:2, sec:0, name:"American Legion Post 365 Fish Fry", addr:"1022 Vandalia St, Collinsville, IL 62234", lat:38.6729, lng:-89.9850, type:"American Legion Post", lent:"No", lentLabel:"Year-Round", menu:"Cajun fish (Icelandic cod), Missouri farm-raised catfish, fried shrimp; dine-in, carry-out, curbside", link:"https://collinsvillepost365.com/FishFry.html", rating:4.2, ratingText:"Google/Yelp ~4.2/5 — 'Best in the Midwest since 1956.' Regular live music & karaoke on Fridays. Hours: 3–7:45 pm every Friday.", markerType:"year-round" },
+  { id:3, sec:0, name:"American Legion Post 397 Fish Fry", addr:"934 E Rue De La Banque, St. Louis, MO 63141", lat:38.6620, lng:-90.4230, type:"American Legion Post", lent:"No", lentLabel:"Year-Round (extended Lent hours)", menu:"Cod, catfish, whole catfish, fried shrimp; year-round lunch 11am–2pm", link:"https://www.yelp.com/biz/american-legion-post-397-saint-louis-2", rating:4.0, ratingText:"Yelp 4/5 — 'Cat fish and lots of sides, cod and clam chowder soup — top notch.' Lowest prices in town per reviewers.", markerType:"year-round" },
+  { id:4, sec:0, name:"VFW Post 3944 Fish Fry", addr:"10815 Midland Blvd, St. Louis (Overland), MO 63114", lat:38.7098, lng:-90.3791, type:"VFW Post", lent:"No", lentLabel:"Year-Round", menu:"Fried cod plates; carry-out available. Open 10:30am–7pm Fridays.", link:"N/A", rating:4.3, ratingText:"Google reviews: 'Best Cod plate in St. Louis!' Friendly service.", markerType:"year-round" },
+
+  // ---- SECTION 1: STL City ----
+  { id:5, sec:1, name:"St. Cecilia Parish — Mexican Fish Fry", addr:"5418 Louisiana Ave, St. Louis, MO 63111", lat:38.5867, lng:-90.2541, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Jack salmon, fried cod, chile rellenos, deep-fried quesadillas, bean tostadas, margaritas", link:"N/A", rating:4.6, ratingText:"South City legend. 'Arrive early — long lines every Friday.' Most festive STL fish fry. Full bar, outdoor tents, musicians.", markerType:"lenten" },
+  { id:6, sec:1, name:"St. Alphonsus Liguori 'Rock' Church Fish Fry", addr:"1118 N Grand Blvd, St. Louis, MO 63106", lat:38.6352, lng:-90.2189, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; extended lunch through dinner hours (unusual for a parish fry)", link:"N/A", rating:4.4, ratingText:"Featured in STL Post-Dispatch. Community landmark. Extended hours praised.", markerType:"lenten" },
+  { id:7, sec:1, name:"Epiphany of Our Lord Parish Fish Fry", addr:"6596 Smiley Ave, St. Louis, MO 63109", lat:38.5830, lng:-90.3050, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Cornmeal-crusted catfish (specialty), mac & cheese, French baguette option; adjacent bowling alley", link:"N/A", rating:4.5, ratingText:"Feast Magazine & STL Mag featured. 'Best for catfish.' 4:30–7pm. 'Catfish alone is worth the trip.'", markerType:"lenten" },
+  { id:8, sec:1, name:"St. Pius V Parish Fish Fry", addr:"3310 S Grand Blvd, St. Louis, MO 63118", lat:38.5845, lng:-90.2574, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, standard sides", link:"N/A", rating:4.3, ratingText:"FridayNightFish.com 2011 Fan Poll champion. Well-reviewed community fry.", markerType:"lenten" },
+  { id:9, sec:1, name:"Holy Trinity Catholic Church FishFest", addr:"3519 Meramec St, St. Louis, MO 63116", lat:38.5826, lng:-90.2658, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod with full bar — 'FishFest' branded; one of the only parish fries with a full bar", link:"N/A", rating:4.4, ratingText:"Feast Magazine pick. Notable full bar. Festive atmosphere. 'FishFest cups' are iconic.", markerType:"lenten" },
+  { id:10, sec:1, name:"Cathedral Parish Fish Fry", addr:"4431 Lindell Blvd, St. Louis, MO 63108", lat:38.6329, lng:-90.2586, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, standard sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed. Historic parish setting.", markerType:"lenten" },
+  { id:11, sec:1, name:"Holy Trinity Serbian Orthodox Church Fish Fry", addr:"1910 Serbian Dr, St. Louis, MO 63104", lat:38.6051, lng:-90.2127, type:"Serbian Orthodox Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Eastern European specialties, fried fish, hearty portions", link:"N/A", rating:4.3, ratingText:"KSDK and local blogs featured. 'Expect hearty portions and unique flavors you won't find elsewhere.'", markerType:"lenten" },
+  { id:12, sec:1, name:"St. Margaret of Scotland Parish Fish Fry", addr:"3854 Flad Ave, St. Louis, MO 63110", lat:38.6166, lng:-90.2645, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, standard church fry fare", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed.", markerType:"lenten" },
+  { id:13, sec:1, name:"St. Agatha Catholic Church Fish Fry", addr:"3239 S 9th St, St. Louis, MO 63118", lat:38.5878, lng:-90.2180, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:14, sec:1, name:"St. Anthony of Padua Parish Fish Fry (City)", addr:"3140 Meramec St, St. Louis, MO 63118", lat:38.5841, lng:-90.2494, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed.", markerType:"lenten" },
+  { id:15, sec:1, name:"St. James the Greater Catholic Church Fish Fry", addr:"6401 Wade Ave, St. Louis, MO 63139", lat:38.5989, lng:-90.3082, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:16, sec:1, name:"St. Joan of Arc Fish Fry (Church of the Magdalen)", addr:"6080 Eichelberger St, St. Louis, MO 63109", lat:38.5850, lng:-90.2876, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; 4–7pm", link:"N/A", rating:4.0, ratingText:"Dual-campus parish (St. Joan of Arc + Our Lady of Sorrows).", markerType:"lenten" },
+  { id:17, sec:1, name:"Our Lady of Sorrows Fish Fry (Church of the Magdalen)", addr:"5655 Mimika Ave, St. Louis, MO 63109", lat:38.5872, lng:-90.2987, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; 4:30–7pm", link:"N/A", rating:4.0, ratingText:"Church of The Magdalen parish. South St. Louis.", markerType:"lenten" },
+  { id:18, sec:1, name:"St. Gabriel the Archangel Parish Fish Fry", addr:"6303 Nottingham Ave, St. Louis, MO 63109", lat:38.5862, lng:-90.2934, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; Fridays Feb 20 – Apr 3, 2026", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:19, sec:1, name:"St. Mark Catholic Church Fish Fry (City)", addr:"4712 Donovan Ave, St. Louis, MO 63116", lat:38.5832, lng:-90.2711, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; Fridays Feb 20 – Apr 3, 2026", link:"N/A", rating:4.0, ratingText:"South St. Louis community parish.", markerType:"lenten" },
+  { id:20, sec:1, name:"St. Joseph Croatian Catholic Church Fish Fry", addr:"2112 S 12th St, St. Louis, MO 63104", lat:38.6027, lng:-90.2174, type:"Croatian Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Traditional Croatian and standard fish fry fare", link:"N/A", rating:4.1, ratingText:"STL Moms contributor recommendation.", markerType:"lenten" },
+  { id:21, sec:1, name:"Spanish Society Fish Fry", addr:"7107 Michigan Ave, St. Louis, MO 63111", lat:38.5782, lng:-90.2479, type:"Social/Cultural Club", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fish fry with Latin-influenced menu", link:"N/A", rating:4.0, ratingText:"Community recommendation via STL Moms.", markerType:"lenten" },
+  { id:22, sec:1, name:"Immaculate Heart of Mary Parish Fish Fry", addr:"4234 Blow St, St. Louis, MO 63116", lat:38.5888, lng:-90.2703, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:23, sec:1, name:"St. Stephen Protomartyr Parish Fish Fry", addr:"6401 Magnolia Ave, St. Louis, MO 63139", lat:38.5988, lng:-90.3073, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout & FridayNightFish.com listed.", markerType:"lenten" },
+  { id:24, sec:1, name:"American Legion Soulard Fish Fry", addr:"2601 S 11th St, St. Louis, MO 63104", lat:38.6002, lng:-90.2085, type:"American Legion Post", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, green beans, coleslaw, mac & cheese; full & half plates; cooked to order", link:"http://www.fridaynightfish.com/2016/03/american-legion-soulard-2601-s-11th-st.html", rating:4.2, ratingText:"FridayNightFish.com: 'Great food. Cod very good — crispy coating, hot and flaky inside.' Cash bar.", markerType:"lenten" },
+  { id:25, sec:1, name:"Loyola Academy Fish Fry", addr:"St. Louis City, MO (address TBD)", lat:38.639, lng:-90.246, type:"School/Academy", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:0, ratingText:"FridayNightFish.com listed. Verify address before visiting.", markerType:"lenten" },
+
+  // ---- SECTION 2: South County ----
+  { id:26, sec:2, name:"Assumption-Mattese Parish Fish Fry", addr:"4725 Mattis Rd, St. Louis, MO 63128", lat:38.5307, lng:-90.3863, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Beer-battered cod, fried catfish & shrimp, baked fish, Bartolino's pasta; themed nights (lobster po'boy, fish tacos, grilled salmon)", link:"https://www.assumptionfishfry.org", rating:4.7, ratingText:"Voted #1 fish fry in St. Louis by multiple sources. Pre-order curbside available. ADA seating. Bartolino's pink sauce exclusive.", markerType:"lenten" },
+  { id:27, sec:2, name:"St. Simon the Apostle Fish Fry", addr:"11011 Mueller Rd, St. Louis, MO 63123", lat:38.5468, lng:-90.3521, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"4 entree options, hush puppies, 2 sides, dessert; dine-in, carry-out, drive-thru", link:"https://www.stsimonchurch.org", rating:4.3, ratingText:"STL Moms listed. Drive-thru option praised.", markerType:"lenten" },
+  { id:28, sec:2, name:"St. Francis of Assisi Parish Fish Fry", addr:"4615 Ringer Rd, St. Louis, MO 63129", lat:38.5115, lng:-90.3497, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; dine-in, carry-out, drive-thru. Ash Wed + every Friday Feb 18 – Apr 3, 2026.", link:"N/A", rating:4.2, ratingText:"Drive-thru option. KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:29, sec:2, name:"St. Margaret Mary Alacoque Parish Fish Fry", addr:"4820 Ringer Rd, St. Louis, MO 63129", lat:38.5117, lng:-90.3499, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, shrimp; standard fry", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed. Oakville area.", markerType:"lenten" },
+  { id:30, sec:2, name:"St. Matthias Parish Fish Fry", addr:"4731 Mattis Rd, Mehlville, MO 63128", lat:38.5309, lng:-90.3861, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, standard sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:31, sec:2, name:"St. George Parish Fish Fry (Affton)", addr:"9650 Gushard Dr, Affton, MO 63123", lat:38.5571, lng:-90.3258, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:32, sec:2, name:"St. Catherine Laboure Parish Fish Fry", addr:"10228 Sappington Rd, Sunset Hills, MO 63127", lat:38.5455, lng:-90.3979, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, standard fry", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed.", markerType:"lenten" },
+  { id:33, sec:2, name:"St. Andrew Parish Fish Fry", addr:"7317 Devonshire Ave, St. Louis, MO 63119", lat:38.5609, lng:-90.3003, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:34, sec:2, name:"St. Martin of Tours Parish Fish Fry", addr:"4613 S Lindbergh Blvd, Lemay, MO 63125", lat:38.5531, lng:-90.3234, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:35, sec:2, name:"Our Lady of Assumption — House Springs Fish Fry", addr:"4696 Notre Dame Ln, House Springs, MO 63051", lat:38.4307, lng:-90.5406, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; dine-in, carry-out, drive-thru; 4–7pm. 2026: Feb 20 – Mar 27.", link:"N/A", rating:4.1, ratingText:"KSDK listed. Jefferson County border.", markerType:"lenten" },
+  { id:36, sec:2, name:"St. Mark Catholic Church Fish Fry (South County)", addr:"8900 Mackenzie Rd, Affton/Mehlville, MO 63123", lat:38.5488, lng:-90.3330, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; Fridays Feb 20 – Apr 3, 2026", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:37, sec:2, name:"St. Anthony of Padua — High Ridge Fish Fry", addr:"1623 Jeffco Blvd (KC Hall), Arnold, MO 63010", lat:38.4230, lng:-90.4398, type:"Knights of Columbus Hall", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; Ash Wed + Fridays Feb 20 – Mar 27 (no Good Friday)", link:"N/A", rating:4.1, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:38, sec:2, name:"St. Joseph Parish — Imperial Fish Fry", addr:"Imperial, MO 63052", lat:38.402, lng:-90.477, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; Feb 20, 27, Mar 13, 20, 27, Apr 3 (no Mar 6)", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed. No fry Mar 6 due to auction.", markerType:"lenten" },
+
+  // ---- SECTION 3: West County ----
+  { id:39, sec:3, name:"IWKnights Fish Fry (Incarnate Word)", addr:"13416 Olive Blvd (Bollinger Hall), Chesterfield, MO 63017", lat:38.6517, lng:-90.5339, type:"Knights of Columbus (at Catholic Church)", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod (dinners & bulk), fried shrimp, baked tilapia, weekly Cajun specials; hush puppies, mac & cheese, coleslaw", link:"https://stlfishfry.com", rating:4.7, ratingText:"'St. Louis' Best Family Fish Fry' — 36 years running. Accepts cash, cards, mobile pay. 2026: Feb 13 – Mar 27 (7 Fridays).", markerType:"lenten" },
+  { id:40, sec:3, name:"St. Monica Parish 'World Famous Fish Fry'", addr:"12934 Marine Ave, St. Louis, MO 63146", lat:38.6732, lng:-90.4694, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod & shrimp dinners; fries, spaghetti, coleslaw, dessert; 'Beergaritas'; bulk fish & shrimp by the pound", link:"https://stmonicastl.org", rating:4.5, ratingText:"4–7pm. 2026: Feb 20 – Mar 27. High local following.", markerType:"lenten" },
+  { id:41, sec:3, name:"St. Nicholas (West County) Fish Fry", addr:"12550 S Forty Dr, St. Louis, MO 63141", lat:38.6487, lng:-90.4502, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Themed nights: Lobster po' boys (2/27), Southwest fish tacos (3/27), hot honey rockfish sandwich (4/11); standard cod also", link:"N/A", rating:4.4, ratingText:"STL Moms favorite. Held at St. Nicholas Family Life Center. Feb 20 – Mar 27.", markerType:"lenten" },
+  { id:42, sec:3, name:"St. Mary Magdalen Parish Fish Fry (Brentwood)", addr:"2618 S Brentwood Blvd, Brentwood, MO 63144", lat:38.6160, lng:-90.3624, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, shrimp, sides; drive-thru option. Feb 20 – Mar 27 (no Good Friday).", link:"N/A", rating:4.5, ratingText:"FridayNightFish.com 2014 Fan Poll winner. 'Beloved option that draws a crowd every Friday.'", markerType:"lenten" },
+  { id:43, sec:3, name:"St. Michael the Archangel Parish Fish Fry (Shrewsbury)", addr:"100 Saint Anthony Ln, Shrewsbury, MO 63119", lat:38.5884, lng:-90.3524, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:44, sec:3, name:"St. Peter Parish — Kirkwood Fish Fry", addr:"130 E Monroe Ave, Kirkwood, MO 63122", lat:38.5830, lng:-90.4065, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; school dining hall (215 N. Clay) — dine-in & drive-thru", link:"https://stpeterkirkwood.org", rating:4.3, ratingText:"KidsOutAndAbout & FridayNightFish listed. 2026: Feb 20 – Mar 27 (no Good Friday).", markerType:"lenten" },
+  { id:45, sec:3, name:"St. Gerard Majella Parish Fish Fry (Kirkwood)", addr:"100 E Argonne Dr, Kirkwood, MO 63122", lat:38.5831, lng:-90.3994, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.4, ratingText:"FridayNightFish.com 2010 Fan Poll winner.", markerType:"lenten" },
+  { id:46, sec:3, name:"St. Clement of Rome Parish Fish Fry (Des Peres)", addr:"1510 Clarkson Rd, Des Peres, MO 63131", lat:38.5946, lng:-90.4430, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; 4–7pm. 2026: Feb 20 – Mar 27 (no Good Friday).", link:"N/A", rating:4.1, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:47, sec:3, name:"Holy Infant Parish Fish Fry (Ballwin)", addr:"627 Dennison Rd, Ballwin, MO 63011", lat:38.5956, lng:-90.5525, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Baked/fried cod, fried grouper, baked salmon, fried shrimp; mostaccioli, fries, coleslaw; roll & cookie. 4:30–7:30pm.", link:"https://holyinfantballwin.org", rating:4.5, ratingText:"Feast Magazine pick. 'Does it big each year' — variety praised.", markerType:"lenten" },
+  { id:48, sec:3, name:"Christ, Prince of Peace Parish Fish Fry (Ballwin)", addr:"700 New Ballwin Rd, Ballwin, MO 63021", lat:38.5996, lng:-90.5537, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.3, ratingText:"FridayNightFish.com 2014 Fan Poll winner (tied).", markerType:"lenten" },
+  { id:49, sec:3, name:"St. Joseph Parish — Manchester Fish Fry", addr:"567 St. Joseph Ln, Manchester, MO 63021", lat:38.5896, lng:-90.5061, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fish, shrimp, fish tacos, clam chowder, pasta, pizza, green beans, hush puppies, coleslaw, pub chips, dessert, beer & wine; 4:30–7pm", link:"N/A", rating:4.4, ratingText:"KSDK listed. Diverse menu praised. 2026: Feb 20 – Mar 27.", markerType:"lenten" },
+  { id:50, sec:3, name:"St. Clare of Assisi Parish Fish Fry (Ellisville)", addr:"15575 Clayton Rd, Ellisville, MO 63011", lat:38.5928, lng:-90.5862, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:51, sec:3, name:"St. Alban Roe Parish Fish Fry (Wildwood)", addr:"15029 Clayton Rd, Wildwood, MO 63011", lat:38.5862, lng:-90.6637, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; Mikesch Hall. Dates: Feb 20, 27, Mar 13, 20 (4 fries only).", link:"N/A", rating:4.0, ratingText:"Fun4STLKids listed.", markerType:"lenten" },
+  { id:52, sec:3, name:"St. Joseph Parish — Clayton Fish Fry", addr:"410 N Meramec Ave, Clayton, MO 63105", lat:38.6455, lng:-90.3219, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com reviewed.", markerType:"lenten" },
+  { id:53, sec:3, name:"Mary Queen of Peace Parish Fish Fry", addr:"675 Ballas Rd, Des Peres, MO 63131", lat:38.5948, lng:-90.4429, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; 5–9pm first fry (Feb 20)", link:"N/A", rating:4.1, ratingText:"Fun4STLKids listed.", markerType:"lenten" },
+
+  // ---- SECTION 4: North County ----
+  { id:54, sec:4, name:"St. Rose Philippine Duchesne Parish Fish Fry", addr:"2301 Charbonier Rd, Florissant, MO 63031", lat:38.7972, lng:-90.3211, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.4, ratingText:"FridayNightFish.com 2012 Fan Poll winner. Highly regarded community fry.", markerType:"lenten" },
+  { id:55, sec:4, name:"American Legion Florissant Valley Post 444", addr:"Florissant, MO 63031 (call for address)", lat:38.792, lng:-90.322, type:"American Legion Post", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fish fry (Lenten); menu details on website", link:"https://www.florissantlegion.org", rating:4.0, ratingText:"Local North County option. Verify address before visiting.", markerType:"lenten" },
+
+  // ---- SECTION 5: St. Charles County ----
+  { id:56, sec:5, name:"All Saints Parish Fish Fry (St. Peters)", addr:"7 McMenamy Rd, St. Peters, MO 63376", lat:38.7948, lng:-90.6118, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides; 4–7pm. 2026: Feb 20 – Mar 27 (no Good Friday).", link:"N/A", rating:4.1, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:57, sec:5, name:"St. Charles Borromeo Parish Fish Fry", addr:"1101 N 2nd St (Frenchtown), St. Charles, MO 63301", lat:38.7897, lng:-90.4872, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Baked/fried cod, whole catfish, fried shrimp, fish tacos, pizza; adult & child meals; sides included; 4–7pm", link:"https://www.discoverstcharles.com", rating:4.4, ratingText:"Discover St. Charles featured. 2026: Feb 20 – Mar 27.", markerType:"lenten" },
+  { id:58, sec:5, name:"Saint Cletus Parish Fish Fry (St. Charles)", addr:"350 Droste Rd, St. Charles, MO 63301", lat:38.7752, lng:-90.4881, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides. 2026: Feb 20 – Mar 27 (no Good Friday).", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:59, sec:5, name:"Sts. Joachim & Ann Parish Fish Fry", addr:"4400 Mochel Dr, St. Charles, MO 63304", lat:38.7434, lng:-90.5393, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides. Feb 20 – Mar 27 (no Good Friday).", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com & KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:60, sec:5, name:"St. Peter Parish — St. Charles Fish Fry", addr:"400 N 7th St, St. Charles, MO 63301", lat:38.7899, lng:-90.4855, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:61, sec:5, name:"St. Joseph Catholic Church — Wentzville Fish Fry", addr:"2 Pearce Blvd, Wentzville, MO 63385", lat:38.8119, lng:-90.8581, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:62, sec:5, name:"St. Patrick Catholic Church — Wentzville Fish Fry", addr:"201 W Pearce Blvd, Wentzville, MO 63385", lat:38.8112, lng:-90.8598, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides. 2026: Feb 20 – Mar 27.", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed.", markerType:"lenten" },
+  { id:63, sec:5, name:"St. Theodore Knights of Columbus Fish Fry", addr:"St. Charles County, MO (verify address)", lat:38.790, lng:-90.560, type:"Knights of Columbus", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed. Address not confirmed — verify before visiting.", markerType:"lenten" },
+
+  // ---- SECTION 6: Jefferson County ----
+  { id:64, sec:6, name:"Knights of Columbus Council 7198 Fish Fry (Arnold)", addr:"1623 Jeffco Blvd (KC Hall), Arnold, MO 63010", lat:38.4244, lng:-90.4401, type:"Knights of Columbus", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; Ash Wed Feb 18 + Fridays Feb 20 – Mar 27 (no Good Friday). Drive-thru 3–7pm.", link:"N/A", rating:4.1, ratingText:"Fun4STLKids listed. Drive-thru option.", markerType:"lenten" },
+
+  // ---- SECTION 7: Metro East IL ----
+  { id:65, sec:7, name:"St. Henry Parish Fish Fry (Belleville)", addr:"300 Lebanon Ave, Belleville, IL 62220", lat:38.5201, lng:-89.9898, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod, sides", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed.", markerType:"lenten" },
+  { id:66, sec:7, name:"St. Joseph Parish — Freeburg, IL Fish Fry", addr:"Freeburg, IL 62243", lat:38.419, lng:-89.902, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; 4–7pm", link:"N/A", rating:4.0, ratingText:"KidsOutAndAbout listed. Verify 2026 schedule.", markerType:"lenten" },
+  { id:67, sec:7, name:"Holy Spirit Parish Fish Fry (Fairview Heights)", addr:"505 Fountains Pkwy, Fairview Heights, IL 62208", lat:38.5954, lng:-89.9952, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Deep-fried grouper plank, baked salmon, fried cod, baked cod and shrimp; spicy catfish option; dine-in, drive-thru, carry-out", link:"N/A", rating:4.3, ratingText:"Fun4STLKids listed. 4:30pm+ Fridays.", markerType:"lenten" },
+  { id:68, sec:7, name:"Epiphany Parish Fish Fry (Metro East)", addr:"Edwardsville/Metro East, IL (verify address)", lat:38.812, lng:-89.952, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod; dine-in and carry-out", link:"N/A", rating:4.1, ratingText:"Fun4STLKids: 'Opens its doors for a fish fry that satisfies dine-in and drive-thru devotees.'", markerType:"lenten" },
+  { id:69, sec:7, name:"The Hall at 7132 Marine Rd Fish Fry", addr:"7132 Marine Rd, Edwardsville, IL 62025", lat:38.8223, lng:-89.9768, type:"Event Hall/Restaurant", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fish fry menu; dine-in only; limited seating", link:"N/A", rating:4.1, ratingText:"Fun4STLKids: 'Fish Fry Fridays are back at The Hall!'", markerType:"lenten" },
+  { id:70, sec:7, name:"American Legion Post 365 (Collinsville) — see Year-Round", addr:"1022 Vandalia St, Collinsville, IL 62234", lat:38.6731, lng:-89.9852, type:"American Legion Post", lent:"No", lentLabel:"Year-Round", menu:"See Year-Round section (#2)", link:"https://collinsvillepost365.com/FishFry.html", rating:4.2, ratingText:"Year-round — see full entry in Section 0.", markerType:"year-round" },
+  { id:71, sec:7, name:"St. Michael Parish — Radom, IL Fish Fry", addr:"Radom, IL 62876 (~60 mi from STL)", lat:38.312, lng:-89.209, type:"Catholic Church", lent:"Yes", lentLabel:"Lenten Season Only", menu:"Fried cod", link:"N/A", rating:4.0, ratingText:"FridayNightFish.com listed. Rural southwestern IL, near edge of 60-mi radius.", markerType:"lenten" },
+
+  // ---- SECTION 8: Restaurants ----
+  { id:72, sec:8, name:"Brasserie by Niche", addr:"4580 Laclede Ave, St. Louis, MO 63108", lat:38.6380, lng:-90.2700, type:"Upscale Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"Beer-battered fried cod on Companion bun, arugula, house pickles, tartar sauce; scallop special weekly", link:"N/A", rating:4.6, ratingText:"STL Mag featured. Award-winning James Beard–nominated team.", markerType:"restaurant" },
+  { id:73, sec:8, name:"Gioia's Deli (All STL Locations)", addr:"Multiple STL-area locations", lat:38.6350, lng:-90.2290, type:"Deli/Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"Fish sandwich: crispy cod, American cheese, pickles, tartar, Hawaiian bun — all locations every Lenten Friday", link:"N/A", rating:4.5, ratingText:"STL classic. Fun4STLKids listed. All locations participate.", markerType:"restaurant" },
+  { id:74, sec:8, name:"Bolyard's Meat & Provisions", addr:"2733 Sutton Ave, Maplewood, MO 63143", lat:38.6095, lng:-90.3180, type:"Specialty Butcher/Deli", lent:"No", lentLabel:"Daily thru Easter (not just Fridays)", menu:"Fried cod sandwich w/ pepper jack, bread & butter pickles, green goddess dressing, bibb lettuce on brioche", link:"N/A", rating:4.6, ratingText:"STL Mag featured. Available every day through Easter (not just Fridays).", markerType:"restaurant" },
+  { id:75, sec:8, name:"Grace Meat + Three / Grace Chicken + Fish", addr:"8654 Watson Rd, Crestwood, MO 63119", lat:38.5499, lng:-90.3882, type:"Southern Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"Cornmeal-crusted catfish po'boy, lettuce, onions, green tomato relish, comeback sauce on toasted French bread", link:"N/A", rating:4.5, ratingText:"Multiple locations. KSDK featured. Popular for non-traditional approach.", markerType:"restaurant" },
+  { id:76, sec:8, name:"Stellina Pasta Café", addr:"Multiple STL locations", lat:38.6270, lng:-90.2880, type:"Italian Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"Baked cod, shrimp scampi diavolo, herbed salmon, linguine and clams, fish & chips, cod sandwich; every Friday", link:"N/A", rating:4.4, ratingText:"STL Mag listed. Multiple locations.", markerType:"restaurant" },
+  { id:77, sec:8, name:"Farm Spirit (Blue Jay Brewing)", addr:"2710 Locust St, St. Louis, MO 63103", lat:38.6327, lng:-90.2367, type:"Brewery/Restaurant", lent:"No", lentLabel:"Daily thru Lent (not just Fridays)", menu:"Fried catfish po'boy, Zapps Voodoo chip-crusted, shredded lettuce, shaved onions, garlic dill pickles, remoulade on Union Loafers hoagie", link:"N/A", rating:4.4, ratingText:"STL Mag. Craft beer pairing destination. Available every day during Lent.", markerType:"restaurant" },
+  { id:78, sec:8, name:"Expat BBQ", addr:"3730 Foundry Way, St. Louis, MO 63110", lat:38.6280, lng:-90.2590, type:"BBQ Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"Fried cod sandwich, tartar sauce, cabbage slaw", link:"N/A", rating:4.2, ratingText:"STL Mag listed.", markerType:"restaurant" },
+  { id:79, sec:8, name:"The Chocolate Pig (Le Méridien Clayton)", addr:"7730 Bonhomme Ave, Clayton, MO 63105", lat:38.6457, lng:-90.3240, type:"Hotel Restaurant", lent:"Yes", lentLabel:"Lenten Fridays Only", menu:"8-oz beer-battered freshwater white fish, thick-cut fries, house-made slaw, Parisian tartar sauce; lunch & dinner", link:"N/A", rating:4.5, ratingText:"STL Mag listed. Upscale hotel dining experience.", markerType:"restaurant" },
+];
+
+// ===== STATE =====
+let currentSection = 'all';
+let selectedId = null;
+let markers = {};
+let visibleData = [...LOCATIONS];
+let map, markerLayer;
+
+// ===== MAP INIT =====
+function initMap() {
+  map = L.map('map', { zoomControl: true, attributionControl: false }).setView([38.627, -90.197], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  L.control.attribution({ position: 'bottomright', prefix: '© <a href="https://openstreetmap.org">OSM</a>' }).addTo(map);
+
+  markerLayer = L.layerGroup().addTo(map);
+  renderMarkers(LOCATIONS);
+}
+
+function makeIcon(loc, selected=false) {
+  const colors = { 'year-round': '#4a9060', 'lenten': '#b07818', 'restaurant': '#3a8080' };
+  const bg = colors[loc.markerType] || '#b07818';
+  const border = selected ? '#ffffff' : 'rgba(255,255,255,0.3)';
+  const scale = selected ? 1.5 : 1;
+  const size = Math.round(28 * scale);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 28 28">
+    <circle cx="14" cy="12" r="10" fill="${bg}" stroke="${border}" stroke-width="${selected?2.5:1.5}" opacity="${selected?1:0.9}"/>
+    <text x="14" y="16" text-anchor="middle" font-size="11" fill="white">🐟</text>
+  </svg>`;
+  return L.divIcon({
+    className: '',
+    html: svg,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size],
+    popupAnchor: [0, -size]
+  });
+}
+
+function renderMarkers(data) {
+  markerLayer.clearLayers();
+  markers = {};
+  data.forEach(loc => {
+    if (!loc.lat || !loc.lng) return;
+    const m = L.marker([loc.lat, loc.lng], { icon: makeIcon(loc) });
+    m.bindPopup(`<div class="popup-name">${loc.name}</div><div class="popup-addr">${loc.addr}</div><div class="popup-type">${loc.type}</div>`);
+    m.on('click', () => selectLocation(loc.id));
+    markerLayer.addLayer(m);
+    markers[loc.id] = m;
+  });
+}
+
+function fitMapToVisible(data) {
+  const pts = data.filter(d => d.lat && d.lng);
+  if (pts.length === 0) return;
+  if (pts.length === 1) { map.setView([pts[0].lat, pts[0].lng], 14); return; }
+  const bounds = L.latLngBounds(pts.map(p => [p.lat, p.lng]));
+  map.fitBounds(bounds, { padding: [40, 40] });
+}
+
+// ===== SECTION FILTER =====
+function applySection(sec) {
+  currentSection = sec;
+  const filtered = sec === 'all' ? [...LOCATIONS] : LOCATIONS.filter(l => String(l.sec) === String(sec));
+  visibleData = filtered;
+
+  // Update nav
+  document.querySelectorAll('.sec-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.section === String(sec));
+  });
+
+  // Update list header
+  if (sec === 'all') {
+    document.getElementById('current-section-label').textContent = 'All Sections';
+    document.getElementById('current-section-name').textContent = 'All Fish Fry Locations';
+    document.getElementById('current-section-desc').textContent = `${LOCATIONS.length} establishments within 60 miles of St. Louis`;
+  } else {
+    const s = SECTIONS[Number(sec)];
+    document.getElementById('current-section-label').textContent = `Section ${Number(sec)+1}`;
+    document.getElementById('current-section-name').textContent = s.name;
+    document.getElementById('current-section-desc').textContent = `${filtered.length} location${filtered.length!==1?'s':''} — ${s.desc}`;
+  }
+
+  renderMarkers(filtered);
+  fitMapToVisible(filtered);
+  renderList(filtered);
+  clearDetail();
+}
+
+// ===== LIST =====
+function renderList(data) {
+  const list = document.getElementById('fish-list');
+  const q = document.getElementById('list-search').value.trim().toLowerCase();
+  const filtered = q ? data.filter(d => d.name.toLowerCase().includes(q) || d.addr.toLowerCase().includes(q) || d.type.toLowerCase().includes(q)) : data;
+  list.innerHTML = '';
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="padding:20px;color:var(--text-faint);font-size:.78rem;text-align:center;font-style:italic">No results found.</div>`;
+    return;
+  }
+  filtered.forEach(loc => {
+    const div = document.createElement('div');
+    div.className = 'fish-item' + (loc.id === selectedId ? ' selected' : '');
+    div.dataset.id = loc.id;
+
+    const typeTag = loc.type.toLowerCase().includes('church') || loc.type.toLowerCase().includes('knights') ? 'church'
+      : loc.type.toLowerCase().includes('legion') || loc.type.toLowerCase().includes('vfw') ? 'vfw'
+      : loc.type.toLowerCase().includes('restaurant') || loc.type.toLowerCase().includes('deli') || loc.type.toLowerCase().includes('brewing') || loc.type.toLowerCase().includes('bbq') || loc.type.toLowerCase().includes('hotel') || loc.type.toLowerCase().includes('butcher') || loc.type.toLowerCase().includes('italian') ? 'restaurant'
+      : 'church';
+    const lentTag = loc.lentLabel === 'Year-Round' || loc.lentLabel.includes('Daily') ? 'yearround' : 'lenten';
+    const stars = loc.rating ? `⭐ ${loc.rating.toFixed(1)}` : '';
+
+    div.innerHTML = `
+      <div class="fish-item-name">${loc.name}</div>
+      <div class="fish-item-sub">${loc.addr.replace(', ', ' · ').replace(', ', ' · ')}</div>
+      <div class="fish-item-tags">
+        <span class="tag tag-${lentTag}">${lentTag === 'yearround' ? '🗓 Year-Round' : '⛪ Lenten'}</span>
+        <span class="tag tag-${typeTag}">${loc.type}</span>
+        ${stars ? `<span class="tag tag-rating">${stars}</span>` : ''}
+      </div>`;
+    div.addEventListener('click', () => selectLocation(loc.id));
+    list.appendChild(div);
+  });
+}
+
+// ===== SELECT =====
+function selectLocation(id) {
+  selectedId = id;
+  const loc = LOCATIONS.find(l => l.id === id);
+  if (!loc) return;
+
+  // Highlight list item
+  document.querySelectorAll('.fish-item').forEach(el => {
+    el.classList.toggle('selected', Number(el.dataset.id) === id);
+  });
+
+  // Re-render markers with selection
+  Object.entries(markers).forEach(([mid, m]) => {
+    const l = LOCATIONS.find(x => x.id === Number(mid));
+    if (l) m.setIcon(makeIcon(l, Number(mid) === id));
+  });
+
+  // Fly to marker
+  if (loc.lat && loc.lng) {
+    map.flyTo([loc.lat, loc.lng], Math.max(map.getZoom(), 14), { duration: 0.6 });
+    if (markers[id]) markers[id].openPopup();
+  }
+
+  // Scroll list item into view
+  const listItem = document.querySelector(`.fish-item[data-id="${id}"]`);
+  if (listItem) listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Render detail
+  renderDetail(loc);
+}
+
+function renderDetail(loc) {
+  document.getElementById('detail-empty').style.display = 'none';
+  document.getElementById('detail-content').style.display = 'block';
+
+  document.getElementById('d-type').textContent = loc.type;
+  document.getElementById('d-name').textContent = loc.name;
+  document.getElementById('d-addr').innerHTML = `${loc.addr}${loc.link && loc.link !== 'N/A' ? ` — <a href="${loc.link}" target="_blank">📍 Map / Website</a>` : ''}`;
+  document.getElementById('d-coords').textContent = loc.lat && loc.lng ? `📍 ${loc.lat.toFixed(4)}°N, ${Math.abs(loc.lng).toFixed(4)}°W` : '';
+
+  const isYear = loc.lent === 'No';
+  document.getElementById('d-lent').innerHTML = isYear
+    ? `<span class="lent-pill lent-no">✅ Year-Round / Not Lenten Only</span>`
+    : `<span class="lent-pill lent-yes">🔔 ${loc.lentLabel}</span>`;
+
+  document.getElementById('d-menu').textContent = loc.menu;
+
+  const linkSection = document.getElementById('d-link-section');
+  if (loc.link && loc.link !== 'N/A') {
+    linkSection.style.display = 'block';
+    document.getElementById('d-link').href = loc.link;
+  } else {
+    linkSection.style.display = 'none';
+  }
+
+  const starsEl = document.getElementById('d-stars');
+  if (loc.rating) {
+    const full = Math.floor(loc.rating);
+    const half = loc.rating % 1 >= 0.5;
+    starsEl.textContent = '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half?1:0));
+    starsEl.style.display = 'block';
+  } else {
+    starsEl.textContent = '';
+  }
+  document.getElementById('d-rating').textContent = loc.ratingText || 'No reviews available.';
+}
+
+function clearDetail() {
+  selectedId = null;
+  document.getElementById('detail-empty').style.display = 'flex';
+  document.getElementById('detail-content').style.display = 'none';
+  document.querySelectorAll('.fish-item').forEach(el => el.classList.remove('selected'));
+}
+
+// ===== EVENT LISTENERS =====
+document.querySelectorAll('.sec-btn').forEach(btn => {
+  btn.addEventListener('click', () => applySection(btn.dataset.section));
+});
+
+document.getElementById('list-search').addEventListener('input', () => {
+  renderList(visibleData);
+});
+
+// Section nav scroll arrows
+const navEl = document.getElementById('section-nav');
+document.getElementById('nav-left').addEventListener('click', () => { navEl.scrollBy({ left: -200, behavior: 'smooth' }); });
+document.getElementById('nav-right').addEventListener('click', () => { navEl.scrollBy({ left: 200, behavior: 'smooth' }); });
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    if (document.activeElement.id === 'list-search') return;
+    const idx = visibleData.findIndex(l => l.id === selectedId);
+    let next;
+    if (e.key === 'ArrowDown') next = idx < visibleData.length - 1 ? visibleData[idx+1] : visibleData[0];
+    else next = idx > 0 ? visibleData[idx-1] : visibleData[visibleData.length-1];
+    if (next) selectLocation(next.id);
+    e.preventDefault();
+  }
+});
+
+// Lent status
+const now = new Date();
+const lentStart = new Date('2026-02-18');
+const lentEnd = new Date('2026-04-03');
+const statusBadge = document.getElementById('lent-status');
+if (now >= lentStart && now <= lentEnd) {
+  statusBadge.textContent = '🎣 Lent Active';
+  statusBadge.style.background = 'var(--green)';
+} else {
+  statusBadge.textContent = '📅 Lent Coming';
+  statusBadge.style.background = 'var(--amber-dk)';
+  statusBadge.style.color = '#fff';
+}
+
+// ===== INIT =====
+initMap();
+applySection('all');
+</script>
+</body>
+</html>

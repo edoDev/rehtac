@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Projects — Rehtac lab</title>
+  <link rel="stylesheet" href="./_assets/lab.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">Rehtac AI · Lab</div>
+      <div class="unlisted">Unlisted</div>
+    </div>
+    <h1>Pet projects, one Pages site</h1>
+    <p class="lede">
+      Consolidated here so we do not spend another GitHub Pages slot on each experiment.
+      This folder is not linked from the public Rehtac landing. Each project has a backlog in its folder.
+    </p>
+    <div class="banner">
+      Original repos still exist. Small apps now also run from this tree.
+      stigref’s STIG library (~117 MB, 19k rule files) stays on its existing Pages site so this repo stays publishable for free.
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <div class="meta">
+          <span class="chip live">Live</span>
+          <span class="chip fail">Basic components failing</span>
+        </div>
+        <h2>stigref</h2>
+        <p>Static STIG / SRG reference: search, deep links, copy packs, Intune hints. Catalog is April 2026.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./stigref/">Project page</a>
+          <a class="btn btn-ghost" href="./stigref/backlog.html">Backlog</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="meta">
+          <span class="chip live">Live here</span>
+          <span class="chip warn">Two forks to reconcile</span>
+        </div>
+        <h2>AdaptPad</h2>
+        <p>Single-page editor that opens HTML, DOCX, Markdown, and the usual text formats. Canonical copy lives here.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./adaptpad/">Open app</a>
+          <a class="btn btn-ghost" href="./adaptpad/backlog.html">Backlog</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="meta">
+          <span class="chip live">Live here</span>
+          <span class="chip warn">Handbook published — verify</span>
+        </div>
+        <h2>MDC Hunt Calendar</h2>
+        <p>2026–27 Jefferson County (Pevely) season calendar, bear overlay, and offline scouting PWA.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./mdc-hunt-calendar/">Open app</a>
+          <a class="btn btn-ghost" href="./mdc-hunt-calendar/backlog.html">Backlog</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="meta">
+          <span class="chip live">Live here</span>
+          <span class="chip warn">2026 Lent dataset</span>
+        </div>
+        <h2>STL Fish Fry Finder</h2>
+        <p>Friday fish fries within about 60 miles of St. Louis — map, section slider, and detail pane.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./stl-fish-fry-finder/">Open app</a>
+          <a class="btn btn-ghost" href="./stl-fish-fry-finder/backlog.html">Backlog</a>
+        </div>
+      </article>
+    </div>
+
+    <section class="section">
+      <h2>Why this shape</h2>
+      <ul>
+        <li>One public repo, one free GitHub Pages deploy: <code>edodev.github.io/rehtac/</code></li>
+        <li>Hub and backlogs are noindex. <code>robots.txt</code> also disallows <code>/projects/</code>.</li>
+        <li>AdaptPad-Grok and AdaptPad-Claude ship the same <code>index.html</code> as AdaptPad. Notes are in the AdaptPad backlog, not a third copy of the editor.</li>
+        <li>stigref cannot move as a full tree without blowing this repo’s Pages budget. The app stays at its current URL until the data layer is thinner.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Rehtac AI · internal lab · <a href="../">public site</a></p>
+    </footer>
+  </div>
+</body>
+</html>

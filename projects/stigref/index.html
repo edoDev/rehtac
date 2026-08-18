@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>stigref — Rehtac lab</title>
+  <link rel="stylesheet" href="../_assets/lab.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">Rehtac AI · Lab</div>
+      <div class="unlisted">Unlisted</div>
+    </div>
+    <p class="crumbs"><a href="../">Projects</a> / stigref</p>
+    <h1>stigref</h1>
+    <p class="lede">
+      Fast static STIG and control reference: search, deep links, copy/paste.
+      No account, no backend, no assessment workflow.
+    </p>
+    <div class="meta" style="margin-bottom:18px;">
+      <span class="chip live">Live on original Pages</span>
+      <span class="chip fail">Basic components failing</span>
+      <span class="chip">Catalog April 2026</span>
+    </div>
+    <div class="actions" style="margin-bottom:28px;">
+      <a class="btn btn-primary" href="https://edodev.github.io/stigref/">Open live app</a>
+      <a class="btn btn-ghost" href="./backlog.html">Backlog</a>
+      <a class="btn btn-ghost" href="https://github.com/edoDev/stigref">Source repo</a>
+    </div>
+
+    <div class="banner">
+      The published SPA is not copied into this repo. The built library is ~117 MB and ~19,700 files
+      (19,403 per-rule JSON objects). Folding that tree into Rehtac would recreate the Pages-space problem
+      this lab exists to solve. Source of truth for the app remains <code>edoDev/stigref</code>.
+    </div>
+
+    <section class="section">
+      <h2>What it is supposed to do</h2>
+      <p>
+        Answer “what does this STIG rule say, and how do I link or paste it?”
+        Intune / GPO package tags, KEV browser, product hubs, and the Library Observatory
+        (<code>/insights</code>) shipped on the original site.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Known failures (why this is not “done”)</h2>
+      <ul>
+        <li>User-reported: several <strong>basic components fail</strong> in daily use. Treat the old “all backlog items done” status as stale.</li>
+        <li>Empty HTML shell without JavaScript. Deep links depend on the Svelte router after load.</li>
+        <li>NIST 800-53 is a stub. CCI / control counts in the live catalog are <strong>0</strong>.</li>
+        <li>Only 5 of 19,403 rules carry a CVE; KEV↔STIG overlap is 0. Threat panels look empty on most rules.</li>
+        <li>Search and rule detail fetch thousands of individual JSON files from GitHub Pages. That is slow and flakes.</li>
+        <li>Vite <code>base</code> is hard-coded to <code>/stigref/</code>, so this app cannot sit at <code>/rehtac/projects/stigref/</code> without a rebuild.</li>
+        <li>Library is still April 2026. Next DISA ZIP import is still a manual maintainer step.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p><a href="../">All lab projects</a> · MIT code, DISA public U_ content terms apply to the library</p>
+    </footer>
+  </div>
+</body>
+</html>
